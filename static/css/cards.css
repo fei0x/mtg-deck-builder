@@ -1,0 +1,443 @@
+/* cards.css — gallery sections + card component + inclusion-state visuals. */
+
+/* ---- toolbar bits ---- */
+.toolbar-label { font-size: var(--fs-xs); color: var(--text-faint); text-transform: uppercase; letter-spacing: .5px; }
+/* labeled toolbar sections (Group / Sort / Filters / View) */
+.tb-section { display: flex; flex-direction: column; gap: 3px; }
+.tb-section-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tb-spacer { flex: 1 1 auto; min-width: 12px; }
+/* (R9 WS1) "Filters" title + "VIEWING: N" side by side on the same title line. */
+.tb-title-row { display: flex; align-items: baseline; gap: 8px; }
+/* T1/T2 quick-add: text field with an anchored autocomplete dropdown + Bulk button */
+.quick-add { position: relative; }
+.quick-add-input { width: 150px; }
+.quick-add-ac { position: absolute; top: 100%; left: 0; right: 0; z-index: 20;
+  margin-top: 2px; max-height: 260px; overflow-y: auto; box-shadow: var(--shadow-2); }
+.quick-add-ac .autocomplete-item.active { background: var(--bg-3); }
+/* WS5/WS6 — compact multi-select popover (colours / types / cost breakpoints) */
+.ms-wrap { position: relative; display: inline-flex; }
+.ms-popover { position: absolute; top: 100%; left: 0; z-index: 20; margin-top: 2px;
+  min-width: 130px; max-height: 300px; overflow-y: auto; padding: 6px;
+  background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: var(--radius);
+  box-shadow: var(--shadow-2); display: flex; flex-direction: column; gap: 2px; }
+.ms-quick { display: flex; gap: 4px; margin-bottom: 4px; }
+.ms-quick .btn-icon { flex: 1; height: 22px; font-size: var(--fs-xs); }
+.ms-item { display: flex; align-items: center; gap: 5px; padding: 2px 3px; white-space: nowrap; cursor: pointer; }
+.breakpoints { display: inline-flex; gap: 2px; flex-wrap: wrap; }
+.breakpoints .bp {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: var(--fs-xs); color: var(--text-dim);
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 2px 6px; cursor: pointer;
+}
+.breakpoints .bp.on { color: var(--accent); border-color: var(--accent); }
+.breakpoints .bp input { margin: 0; }
+.zoom { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-sm); color: var(--text-dim); }
+.zoom input { width: 100px; }
+
+/* ---- filter row ---- */
+.filter-text {
+  background: var(--bg-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 5px 8px; font-size: var(--fs-sm); min-width: 150px;
+}
+.state-chips { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.state-chip { font-size: var(--fs-xs); opacity: .45; }
+.state-chip.on { opacity: 1; }
+.state-chip.on.cs-border-locked_in { border-color: var(--state-locked-in); color: var(--state-locked-in); }
+.state-chip.on.cs-border-in { border-color: var(--state-in); color: var(--state-in); }
+.state-chip.on.cs-border-undecided { border-color: var(--border-strong); color: var(--text); }
+.state-chip.on.cs-border-out { border-color: var(--state-out); color: var(--text-dim); }
+.state-chip.on.cs-border-locked_out { border-color: var(--state-locked-out); color: var(--text-faint); }
+
+/* ---- sections ---- */
+.gallery-section { margin-bottom: var(--sp-5); }
+.section-header {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) 0; cursor: pointer; user-select: none;
+  border-bottom: 1px solid var(--border); margin-bottom: var(--sp-3);
+}
+.section-header:hover .section-name { color: var(--accent); }
+.section-header .chevron { color: var(--text-faint); width: 1em; }
+.section-name { font-weight: 600; font-size: var(--fs-lg); }
+.section-count { color: var(--text-dim); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+
+/* ---- card grid ---- */
+.section-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-w, 150px), 1fr));
+  gap: var(--sp-3);
+}
+
+/* ---- card ---- */
+.card { position: relative; cursor: pointer; border-radius: var(--radius); transition: transform 80ms; }
+.card:hover { transform: translateY(-2px); }
+/* (R14) percentage radius, not a fixed px one — real MTG cards' printed
+   corners are proportionally "steeper" than our old fixed 8px cut, so at
+   larger render sizes a sliver of the (usually white) image background
+   outside the card's own rounded silhouette peeked through our clip mask.
+   A % radius scales with the card's rendered size, keeping the cut at least
+   as steep as the card's own corner at every size. (R17) 6% cut away too
+   much of the art at the corner and, since a plain "%" radius resolves the
+   horizontal radius against the box's WIDTH and the vertical radius against
+   its HEIGHT separately, a single percentage also drew a slightly elliptical
+   corner rather than a true circular one on this portrait (488:680) box.
+   `H% / V%` sets them independently — picking V% = H% * (width/height)
+   makes the two resolve to the SAME pixel radius (a true circle) at any
+   render size. 5% is close to a real card's actual ~5% corner. */
+.card-img { position: relative; border-radius: 5% / 3.58%; overflow: hidden; aspect-ratio: 488 / 680; background: var(--bg-2); }
+.card-img img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 200ms; }
+.card-img img.loaded, .card-img img[src] { opacity: 1; }
+.card-placeholder {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  width: 100%; height: 100%; padding: var(--sp-2); color: var(--text-dim);
+  font-size: var(--fs-sm); border: 1px dashed var(--border-strong);
+}
+
+/* ---- inclusion-state visuals (fixed accents; "in" highlighted, "out" recedes) ---- */
+/* Every state gets a visible ring (matches the state-bubble colors) — also masks
+   the white corner artifacting on card images. */
+.card.s-locked_in .card-img { box-shadow: 0 0 0 3px var(--state-locked-in); }
+.card.s-in .card-img { box-shadow: 0 0 0 3px var(--state-in); }
+.card.s-undecided .card-img { box-shadow: 0 0 0 2px var(--text-dim); }
+.card.s-out { opacity: .72; }
+.card.s-out .card-img { filter: saturate(.6); box-shadow: 0 0 0 2px var(--state-out); }
+.card.s-locked_out { opacity: .45; }
+.card.s-locked_out .card-img { box-shadow: 0 0 0 2px var(--state-locked-out); }
+
+/* ---- badges ---- */
+.badge {
+  position: absolute; font-size: var(--fs-xs); line-height: 1;
+  padding: 2px 5px; border-radius: var(--radius-sm); background: rgba(0,0,0,.7); color: #fff;
+}
+/* Top-left badge stack: illegal/lock on top, the association badge below it.
+   Badges inside flow vertically (static), so they keep a consistent size/shape. */
+.badge-stack-tl { position: absolute; top: 4px; left: 4px;
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.badge-stack-tl .badge { position: static; }
+/* (R13) dialled back from R11's +50% to ~+25% over the original size (50%
+   read as way too big) — lock/count/warning/banned/flip icons over gallery
+   cards. */
+.badge-lock { background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center;
+  padding: 2.5px 6px; }
+.badge-lock svg { width: 14px; height: 14px; display: block; }
+/* (R13) white outline around the lock glyph — restores the look the old lock
+   EMOJI had (a light outline baked into the glyph) that the R9 switch to a
+   custom-drawn SVG path (solid fill, no stroke) lost. Scoped to the on-card
+   badge only (`.badge-lock`), not the inclusion-control buttons elsewhere
+   (drawer/toolbar/export/playtester), which weren't reported as missing it. */
+.badge-lock svg path { stroke: #fff; stroke-width: 1; paint-order: stroke fill; }
+/* (R9) same lock glyph for both states — colour is the only difference. */
+.badge-lock.st-locked_in { color: var(--state-locked-in); }
+.badge-lock.st-locked_out { color: var(--danger); }
+/* (R11) redesigned: a bare red triangle + white "!" (no chip background) —
+   this app's colour dialect uses gold/yellow for "locked in", not "caution",
+   so the warning can't be yellow; a solid chip next to the count badge also
+   read as too heavy/invasive. Sized modestly by default (drawer qty-row);
+   the on-card badge (.badge-stack-tr) gets the +25% bump below (R13). */
+.badge-warn { background: none; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.badge-warn svg { width: 15px; height: 15px; display: block; filter: drop-shadow(0 0 2px rgba(0,0,0,.8)); }
+/* Top-right badge stack: the copy-limit warning sits beside the count badge
+   instead of in the top-left stack. */
+.badge-stack-tr { position: absolute; top: 4px; right: 4px;
+  display: flex; flex-direction: row; gap: 4px; align-items: center; }
+.badge-stack-tr .badge { position: static; }
+.badge-stack-tr .badge-warn svg { width: 18.75px; height: 18.75px; }
+.badge-qty { font-weight: 700; font-size: 14px; padding: 2.5px 6px; }
+/* drawer qty-row copy-limit warning, to the right of the + button — stays at
+   the base (non-card) size above. */
+.qty-warn { position: static; margin-left: 2px; }
+/* "association" badge — same size/shape as the lock, sits below it, distinct colour */
+.badge-secondary { background: var(--accent); color: var(--accent-contrast); }
+/* illegal-for-format: bare red no-symbol (no chip bg), a bit larger — overrides the lock (A4) */
+.badge-illegal { background: none; color: var(--danger);
+  font-size: 18.75px; font-weight: 700; padding: 0; text-shadow: 0 0 3px rgba(0,0,0,.8); }
+
+/* ---- shared inclusion control (5 round icon buttons) ---- */
+.incl-control { display: flex; gap: 4px; }
+.incl-btn {
+  border-radius: 50%; border: 1px solid var(--border-strong);
+  background: var(--bg-2); color: var(--text-dim); cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+}
+.incl-btn:hover { background: var(--bg-hover); color: var(--text); }
+.incl-btn svg { width: 62%; height: 62%; display: block; }
+.incl-sm .incl-btn { width: 22px; height: 22px; font-size: 11px; }
+.incl-md .incl-btn { width: 28px; height: 28px; font-size: 13px; }
+.incl-lg .incl-btn { width: 34px; height: 34px; font-size: 15px; }
+.incl-btn.cs-locked_in.active { background: var(--state-locked-in); color: #1a1407; border-color: var(--state-locked-in); }
+.incl-btn.cs-in.active { background: var(--state-in); color: #04140a; border-color: var(--state-in); }
+.incl-btn.cs-undecided.active { background: var(--text-dim); color: var(--bg-0); border-color: var(--text-dim); }
+.incl-btn.cs-out.active { background: var(--state-out); color: #fff; border-color: var(--state-out); }
+/* (R9) locked_out keeps its dim grey ring/fill — only the glyph turns red
+   (same lock shape as locked_in) instead of the old white "⊘" no-symbol. */
+.incl-btn.cs-locked_out.active { background: var(--state-locked-out); color: var(--danger); border-color: var(--state-locked-out); }
+
+/* state-filter buttons: dim when "off" (state hidden) so on/off is obvious */
+.filter-states .incl-btn:not(.active) { opacity: .4; }
+/* (R9 WS7) export-modal bubble toggles: brownish "tokens" bubble + hidden
+   checkbox wrapper so the same .incl-btn look works as a plain multi-toggle. */
+.incl-btn.cs-tokens.active { background: var(--state-tokens); color: #fff; border-color: var(--state-tokens); }
+.bubble-lab { display: inline-flex; align-items: center; cursor: pointer; }
+.bubble-lab.disabled { opacity: .4; pointer-events: none; }
+.bubble-cbx { position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none; }
+.tb-divider { width: 1px; align-self: stretch; min-height: 22px; background: var(--border); margin: 0 var(--sp-1); }
+
+/* hover-overlay positioning when the control sits on a gallery card */
+.card-states {
+  position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%);
+  padding: 3px; background: rgba(10, 12, 16, 0.85); border-radius: 999px;
+  opacity: 0; transition: opacity 100ms; pointer-events: none;
+}
+.card:hover .card-states { opacity: 1; pointer-events: auto; }
+
+/* ---- info strip ---- */
+.card-info {
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+  padding: 4px 2px 0; font-size: var(--fs-xs); color: var(--text-dim);
+}
+.card-info a { color: var(--text-dim); }
+.card-info a:hover { color: var(--accent); }
+
+/* ---- drawer detail layout (full detail in step 09) ---- */
+.drawer-top { display: flex; gap: var(--sp-3); align-items: flex-start; margin-bottom: var(--sp-4); }
+.drawer-img { flex: 0 0 auto; width: 200px; max-width: 55%; }
+.drawer-card-img { width: 100%; border-radius: 5% / 3.58%; display: block; box-shadow: var(--shadow-1); }
+.drawer-info { flex: 1; min-width: 0; }
+.drawer-name { margin: 0 0 var(--sp-1); font-size: var(--fs-lg); }
+.drawer-type { color: var(--text-dim); font-size: var(--fs-sm); margin-bottom: var(--sp-2); }
+.drawer-meta { font-size: var(--fs-sm); color: var(--text-dim); margin: 3px 0; word-break: break-word; }
+.drawer-note { margin-top: var(--sp-3); font-size: var(--fs-xs); color: var(--text-faint); }
+.drawer-lower { display: flex; flex-direction: column; gap: var(--sp-3); margin-top: var(--sp-4); }
+.drawer-img { width: 210px; }
+.drawer-section { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-2) var(--sp-3); }
+.drawer-section summary { cursor: pointer; font-weight: 600; font-size: var(--fs-sm); }
+.drawer-section .oracle { white-space: pre-wrap; font-size: var(--fs-sm); line-height: 1.6; margin-top: var(--sp-2); color: var(--text); }
+.drawer-img { position: relative; }
+.flip-btn { position: absolute; top: 4px; right: 4px; }
+/* cost + P/T on one row, P/T to the right of the cost (D2) */
+.drawer-costrow { display: flex; align-items: baseline; gap: var(--sp-3); margin-bottom: var(--sp-2); }
+.drawer-cost { margin-bottom: 0; }
+.drawer-pt { font-weight: 600; margin-bottom: 0; color: var(--text-dim); }
+.drawer-field { display: flex; flex-direction: column; gap: 4px; margin: var(--sp-2) 0; }
+.drawer-field > label { font-size: var(--fs-xs); color: var(--text-faint); text-transform: uppercase; letter-spacing: .5px; }
+.drawer-field.qty, .drawer-field .qty-val { }
+.drawer-prices { display: flex; gap: var(--sp-3); }
+
+/* mana pips */
+.mana {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px; padding: 0 3px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; color: #1a1a1a; border: 1px solid rgba(0,0,0,.35);
+  vertical-align: baseline;
+}
+.mana-w { background: var(--mana-w); } .mana-u { background: var(--mana-u); }
+.mana-b { background: var(--mana-b); } .mana-r { background: var(--mana-r); }
+.mana-g { background: var(--mana-g); } .mana-c { background: var(--mana-c); }
+.mana-generic { background: #cfcabf; }
+
+/* drawer quantity row */
+.qty-row { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.qty-row .qty-val { min-width: 24px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.drawer-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* legality */
+.legality { font-size: var(--fs-xs); padding: 2px 8px; border-radius: 999px; border: 1px solid; }
+.legality-ok { color: var(--ok); border-color: var(--ok); }
+.legality-danger { color: var(--danger); border-color: var(--danger); }
+.legality-warn { color: var(--warn); border-color: var(--warn); }
+.legality-faint { color: var(--text-faint); border-color: var(--border); }
+
+/* keywords + rulings */
+.kw-list { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-2); }
+.kw { display: flex; flex-direction: column; }
+.kw-name { font-weight: 600; font-size: var(--fs-sm); text-transform: capitalize; }
+.kw-desc { font-size: var(--fs-sm); color: var(--text-dim); }
+.rulings { margin-top: var(--sp-2); }
+.ruling { font-size: var(--fs-sm); color: var(--text); margin: 0 0 var(--sp-2); }
+.ruling-date { color: var(--text-faint); font-size: var(--fs-xs); margin-right: 6px; }
+
+/* ===== drawer redesign (round 2, single column) ===== */
+.drawer-controls { position: sticky; top: 0; z-index: 3; display: flex; justify-content: flex-end; gap: 6px;
+  padding: var(--sp-2); background: linear-gradient(var(--bg-1) 70%, transparent); }
+.drawer-ctl { width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--bg-3); color: var(--text);
+  border: 1px solid var(--border); cursor: pointer; font-size: 16px; line-height: 1; }
+.drawer-ctl:hover { background: var(--bg-hover); }
+/* remove (🗑) button — tinted slightly red (D4) */
+.drawer-ctl.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 55%, var(--border)); }
+.drawer-ctl.danger:hover { background: color-mix(in srgb, var(--danger) 22%, var(--bg-3)); }
+/* help (?) button — tinted purple, same treatment as the red delete button */
+.drawer-ctl.info { color: var(--info); border-color: color-mix(in srgb, var(--info) 55%, var(--border)); }
+.drawer-ctl.info:hover { background: color-mix(in srgb, var(--info) 22%, var(--bg-3)); }
+/* (R9 WS6) was z-index:6 — #drawer establishes no stacking context of its own,
+   so that 6 was compared directly against #gallery-toolbar's z-index:10 at the
+   document root and lost, rendering the popover UNDER the control bar. Match
+   .gear-menu/.confirm-popover, which already use --z-popover correctly. */
+.help-popover { position: absolute; top: 44px; right: 10px; width: 264px; z-index: var(--z-popover);
+  background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: var(--radius);
+  box-shadow: var(--shadow-2); padding: var(--sp-3); font-size: var(--fs-sm); }
+.help-popover b { color: var(--text); }
+.help-popover p { margin: 6px 0 0; color: var(--text-dim); line-height: 1.45; }
+
+/* name + legality icon stay on ONE line; the icon follows the name text.
+   (R15) `flex-wrap: nowrap` only keeps the ICON from wrapping to its own
+   line — it didn't stop the NAME TEXT wrapping internally across 2 lines for
+   longer names, which left the icon (vertically centred on the row, sized
+   for one line) sitting in a spot that read as "too far right/off" relative
+   to whichever line was shorter. Truncate with an ellipsis instead so the
+   name is always exactly one line and the icon reliably follows right after it. */
+.drawer-namerow { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; margin: 0 0 var(--sp-2); }
+.drawer-namerow .drawer-name { margin: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.drawer-imgwrap { position: relative; width: 100%; max-width: 300px; aspect-ratio: 488 / 680;
+  margin: 0 auto var(--sp-3); }
+.drawer-imgwrap .drawer-card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  border-radius: 5% / 3.58%; box-shadow: var(--shadow-1); }
+.drawer-flip { position: absolute; top: 6px; right: 6px; opacity: 0; transition: opacity 120ms;
+  width: 30px; height: 30px; border-radius: 50%; background: rgba(10,12,16,.8); color: #fff;
+  border: 1px solid var(--border-strong); cursor: pointer; font-size: 15px; }
+.drawer-imgwrap:hover .drawer-flip { opacity: 1; }
+
+.drawer-printrow { display: flex; gap: 6px; align-items: center; justify-content: center; margin-bottom: var(--sp-3); }
+.print-sel { max-width: 220px; }
+
+.drawer-field-tight { display: flex; flex-direction: column; gap: 6px; margin: var(--sp-2) 0; }
+.drawer-bubbles { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+/* Type bubbles use a distinct (teal) colour so they aren't confused with tag bubbles (D5) */
+.type-chip { text-align: left; color: var(--type-chip); border-color: var(--type-chip); }
+.type-chip.primary { background: var(--type-chip); border-color: var(--type-chip); color: var(--bg-0); }
+.chip-edit { border-style: dashed; }
+.chip-x { margin-left: 5px; opacity: .7; cursor: pointer; }
+.chip-x:hover { color: var(--danger); opacity: 1; }
+/* (R9 WS5) tag combobox — z-index uses --z-popover (not a hardcoded number)
+   for the same reason as .help-popover (WS6): #drawer establishes no stacking
+   context, so this needs to out-rank #gallery-toolbar's z-index at the root. */
+.tag-add-wrap { position: relative; display: inline-block; }
+.tag-add-ac { position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-popover);
+  margin-top: 2px; max-height: 200px; overflow-y: auto; box-shadow: var(--shadow-2);
+  background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
+.tag-add-ac .autocomplete-item.active { background: var(--bg-3); }
+/* (R10/R12) bulk-add modal's "add EDHREC recs for a card" field — same
+   combobox look as the tag/quick-add fields. The modal has `overflow: auto`
+   for its own scrolling, which clips a plain absolutely-positioned dropdown
+   (you'd have to scroll the whole modal to see it instead of it popping up
+   over everything) — so this one is rendered at the <body> level with
+   `position: fixed` set inline per-instance (from the input's live bounding
+   rect; see app.js), escaping the modal's clipping entirely. Needs a z-index
+   above the modal overlay's (--z-modal) to render on top of it.       */
+.edh-add-wrap { position: relative; }
+.edh-add-ac { z-index: var(--z-popover);
+  max-height: 200px; overflow-y: auto; box-shadow: var(--shadow-2);
+  background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
+.tag-add { background: var(--bg-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 3px 7px; font-size: var(--fs-xs); width: 120px; }
+
+.qty-row { display: flex; align-items: center; gap: 8px; margin: var(--sp-2) 0; }
+.qty-label { font-size: var(--fs-xs); color: var(--text-faint); text-transform: uppercase; letter-spacing: .5px; }
+.qty-val { min-width: 18px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.drawer-metawrap { display: flex; flex-direction: column; gap: 4px; margin: var(--sp-2) 0; }
+.drawer-metawrap .drawer-cost .mana { margin-right: 2px; }
+
+/* gallery hover-flip */
+/* (R13) +25% (was 26px / 13px; R11's +50% was too much) */
+.card-flip { position: absolute; top: 6px; right: 6px; opacity: 0; transition: opacity 120ms;
+  width: 32.5px; height: 32.5px; border-radius: 50%; background: rgba(10,12,16,.8); color: #fff;
+  border: 1px solid var(--border-strong); cursor: pointer; font-size: 16.25px; z-index: 2; }
+.card:hover .card-flip { opacity: 1; }
+
+/* ===== R3: illegal card, gear menu, tokens, size slider ===== */
+.card.illegal .card-img { box-shadow: 0 0 0 3px var(--danger); }
+.card.illegal { opacity: .8; }
+/* (R9 WS4) the card currently open in the drawer — same accent glow as the
+   playtester's selection highlight, overriding any inclusion/illegal border. */
+.card.selected .card-img { box-shadow: 0 0 0 3px var(--accent), 0 0 10px 2px var(--accent) !important; }
+
+.zoom-range { width: 110px; }
+
+.gear-menu {
+  position: fixed; z-index: var(--z-popover); min-width: 180px;
+  background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: var(--radius);
+  box-shadow: var(--shadow-2); padding: 6px; display: flex; flex-direction: column; gap: 2px;
+}
+.gear-item { text-align: left; background: none; border: 0; color: var(--text);
+  padding: 7px 9px; border-radius: var(--radius-sm); cursor: pointer; font-size: var(--fs-sm); }
+.gear-item:hover { background: var(--bg-hover); }
+.gear-item.danger { color: var(--danger); }
+.gear-sep { border-top: 1px solid var(--border); margin: 4px 0; }
+.gear-label { font-size: var(--fs-xs); color: var(--text-faint); text-transform: uppercase; letter-spacing: .5px; padding: 2px 9px; }
+.gear-version { font-size: var(--fs-xs); color: var(--text-faint); padding: 2px 9px 4px; }
+.gear-menu .segmented { margin: 2px 9px; align-self: flex-start; }
+.gear-rate { font-size: var(--fs-xs); color: var(--text-dim); padding: 4px 9px 2px; }
+
+/* Roomier grid so the skin controls aren't edge-to-edge (R5). */
+.tokens-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--sp-5); }
+.token-card { display: flex; flex-direction: column; gap: 6px; }
+.token-img { width: 100%; border-radius: 5% / 3.58%; box-shadow: var(--shadow-1); background: var(--bg-2); aspect-ratio: 488/680; }
+.token-name { font-weight: 600; font-size: var(--fs-sm); }
+.token-by { font-size: var(--fs-xs); color: var(--text-dim); }
+.token-by-label { color: var(--text); font-weight: 700; }
+.token-prints { display: flex; gap: 6px; align-items: center; }
+.token-prints .print-sel { flex: 1 1 auto; min-width: 0; }
+.token-qty { display: flex; align-items: center; gap: 6px; }
+.token-qty-label { font-size: var(--fs-xs); color: var(--text-dim); margin-right: auto; }
+
+/* R5: inclusion counts (I1) float just above the toggle buttons, into the header
+   band — so they line up with the section titles and add no height to the controls
+   row. Each number matches a toggle's width (incl-md = 28px) + 4px gap to align. */
+.filter-states-wrap { position: relative; display: inline-flex; }
+.filter-state-counts { position: absolute; bottom: calc(100% + 5px); left: 0; display: flex; gap: 4px;
+  pointer-events: none; }
+.filter-state-count { width: 28px; text-align: center; padding: 0; font-variant-numeric: tabular-nums; }
+/* WS2 — "In view" count: a top-row label like the other section titles */
+.tb-inview { color: var(--text-dim); font-variant-numeric: tabular-nums; align-self: flex-start; }
+/* WS4 — rarity label to the right of P/T in the drawer cost row */
+.drawer-rarity { font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  padding: 1px 6px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); color: var(--text-dim); }
+.drawer-rarity.rarity-mythic { color: #f0894e; border-color: #f0894e; }
+.drawer-rarity.rarity-rare { color: #d7b458; border-color: #d7b458; }
+.drawer-rarity.rarity-uncommon { color: #a9c0cc; border-color: #a9c0cc; }
+.drawer-rarity.rarity-common { color: var(--text-dim); }
+
+/* R5: tag-order config list (G1) */
+.tag-order-list { display: flex; flex-direction: column; gap: 4px; max-height: 50vh; overflow-y: auto; margin: var(--sp-2) 0; }
+.tag-order-row { display: flex; align-items: center; gap: var(--sp-2); padding: 6px 9px;
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: grab; }
+.tag-order-row.dragging { opacity: .5; }
+.tag-drag { color: var(--text-faint); cursor: grab; }
+
+/* right-justified button row (E1) */
+.row-end { justify-content: flex-end; }
+.token-prints { display: flex; gap: 6px; }
+
+/* V1: non-token extras (Monarch / Initiative / dungeons) — placeholder tile */
+.token-extra { align-items: center; text-align: center; justify-content: center;
+  border: 1px dashed var(--border); border-radius: var(--radius);
+  padding: var(--sp-3); aspect-ratio: 488/680; background: var(--bg-2); }
+.token-extra-badge { font-size: 2.4rem; line-height: 1; }
+.token-extra-kind { font-size: var(--fs-xs); color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em; }
+
+/* ===== R3: drawer two-column layout + top bar + legality icon ===== */
+.drawer-topbar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center;
+  justify-content: space-between; padding: var(--sp-2); background: linear-gradient(var(--bg-1) 75%, transparent); }
+.drawer-nav, .drawer-controls { position: static; display: flex; gap: 6px; padding: 0; background: none; }
+.drawer-top { display: flex; gap: var(--sp-3); align-items: flex-start; }
+.drawer-left { flex: 0 0 46%; max-width: 220px; min-width: 0; }
+.drawer-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.drawer-info .drawer-name { font-size: var(--fs-lg); }
+/* image fills the left column (not the centered single-column box) */
+.drawer-imgwrap { max-width: none; margin: 0; }
+.drawer-imgwrap.illegal .drawer-card-img { box-shadow: 0 0 0 3px var(--danger); }
+.drawer-printrow { margin-top: var(--sp-2); margin-bottom: 0; }
+.drawer-printrow .print-sel { max-width: 120px; }
+
+/* Both icons are the SAME size; SVG keeps them crisp + centred. Legal = scalloped
+   "verified" seal, illegal = clean circle-slash. */
+.legality-icon { display: inline-flex; align-items: center; justify-content: center;
+  width: 19px; height: 19px; flex: 0 0 auto; cursor: help; }
+.legality-icon svg { width: 19px; height: 19px; display: block; }
+.legality-icon.legal { color: var(--ok); }
+.legality-icon.illegal { color: var(--danger); }
+.drawer-locked { font-size: var(--fs-xs); color: var(--danger); padding: 4px 0; }
+/* inclusion bubbles in the drawer: a touch smaller to match the qty row height */
+.drawer-info .incl-md .incl-btn { width: 26px; height: 26px; font-size: 12px; }

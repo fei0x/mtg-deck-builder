@@ -1,0 +1,112 @@
+/* theme.css — MTG-modern-dark design tokens.
+   Modern, clean dark surfaces with gold (locked) + green (in) accents.
+   All other CSS must reference these variables — no hard-coded colors. */
+
+:root {
+  /* Surfaces (deepest -> raised) */
+  --bg-0: #0f1115;
+  --bg-1: #161a20;
+  --bg-2: #1d222b;
+  --bg-3: #262c37;
+  --bg-hover: #2e3543;
+
+  /* Text */
+  --text: #e8eaef;
+  --text-dim: #9aa3b2;
+  --text-faint: #687180;
+
+  /* Borders */
+  --border: #2b313c;
+  --border-strong: #3a414e;
+
+  /* Brand / interactive accent (modern teal-blue) */
+  --accent: #4c9aff;
+  /* Type-bubble colour (R5 — distinct from tag bubbles, which use --accent) */
+  --type-chip: #56c0c0;
+  --accent-hover: #6aacff;
+  --accent-contrast: #06101f;
+
+  /* Inclusion-state accents (fixed, not color-identity based) */
+  --state-locked-in: #e0b341;   /* gold */
+  --state-in: #3fb950;          /* green */
+  --state-undecided: transparent;
+  --state-out: #5b6270;         /* muted */
+  --state-locked-out: #41454d;  /* dim */
+  --state-tokens: #9c6b35;      /* brown — export filter's "include tokens" bubble (R9) */
+
+  /* Soft background tints for "in" zone option */
+  --tint-in: rgba(63, 185, 80, 0.08);
+  --tint-locked-in: rgba(224, 179, 65, 0.10);
+
+  /* Semantic */
+  --danger: #f0566b;
+  --warn: #e0b341;
+  --ok: #3fb950;
+  --info: #b07bd9;  /* purple — same hue as the playtester's graveyard accent */
+
+  /* Mana pip colors (for symbol rendering in 09) */
+  --mana-w: #f8f6d8;
+  --mana-u: #c1d7e9;
+  --mana-b: #bab1ab;
+  --mana-r: #e49977;
+  --mana-g: #a3c095;
+  --mana-c: #cac5c0;
+
+  /* Typography */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", monospace;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 18px;
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  /* Shadows */
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-drawer: -8px 0 24px rgba(0, 0, 0, 0.5);
+
+  /* Z-index scale */
+  --z-toolbar: 10;
+  --z-drawer: 40;
+  --z-modal: 60;
+  --z-popover: 80;
+  --z-toast: 100;
+
+  /* Layout metrics */
+  --topbar-h: 52px;
+  --drawer-w: 460px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-0); }
+::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }

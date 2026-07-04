@@ -1,0 +1,19 @@
+# Python / runtime
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# App-generated data (not needed to run the app from a fresh clone)
+cache/
+decks/*.json
+!decks/.gitkeep
+
+# Dev-only / not part of the shipped app
+.claude/
+requirements/
+plan/
+
+# OS junk
+.DS_Store
+Thumbs.db

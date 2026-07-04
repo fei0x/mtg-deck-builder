@@ -1,0 +1,173 @@
+/* components.css — reusable UI primitives used across 07-12. */
+
+/* ---- Buttons ---- */
+.btn {
+  background: var(--bg-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms, border-color 120ms;
+}
+.btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-accent { background: var(--accent); color: var(--accent-contrast); border-color: transparent; font-weight: 600; }
+.btn-accent:hover { background: var(--accent-hover); }
+.btn-danger { color: var(--danger); }
+.btn-icon { padding: 4px 8px; }
+/* (R16) bigger gear glyph, same button footprint as before (28x26). */
+#btn-gear { width: 28px; height: 26px; padding: 0; font-size: 17px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+/* (R9 WS9) monochrome top-bar action icons — inherit currentColor like the
+   playtester's zone glyphs, sized to sit on the text baseline. */
+.btn-ic { display: inline-flex; width: 14px; height: 14px; vertical-align: -2px; margin-right: 3px; }
+.btn-ic svg { width: 100%; height: 100%; display: block; }
+
+/* ---- Select ---- */
+.deck-select {
+  background: var(--bg-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 5px 8px; font-size: var(--fs-sm); max-width: 220px;
+}
+/* A deck file that failed to parse — kept visible (not silently dropped) as a
+   disabled, red-flagged option; its title attribute explains why on hover. */
+.opt-broken { color: var(--danger); }
+
+/* ---- Chips (tags, filters) ---- */
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--bg-2); color: var(--text-dim);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 2px 9px; font-size: var(--fs-xs); cursor: pointer;
+}
+.chip:hover { background: var(--bg-hover); color: var(--text); }
+.chip.active { background: var(--accent); color: var(--accent-contrast); border-color: transparent; }
+.chip.primary { border-color: var(--accent); color: var(--accent); }
+
+/* ---- Toggle ---- */
+.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-sm); cursor: pointer; user-select: none; }
+.toggle input { display: none; }
+.toggle .track {
+  width: 32px; height: 18px; border-radius: 999px; background: var(--bg-3);
+  position: relative; transition: background 120ms;
+}
+.toggle .track::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%; background: var(--text-dim);
+  transition: transform 120ms, background 120ms;
+}
+.toggle input:checked + .track { background: var(--accent); }
+.toggle input:checked + .track::after { transform: translateX(14px); background: #fff; }
+
+/* ---- Segmented control (bucketing modes, etc.) ---- */
+.segmented { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.segmented button { background: var(--bg-2); color: var(--text-dim); border: 0; padding: 5px 10px; font-size: var(--fs-sm); cursor: pointer; }
+.segmented button + button { border-left: 1px solid var(--border); }
+.segmented button.active { background: var(--accent); color: var(--accent-contrast); font-weight: 600; }
+
+/* ---- Modal scaffold ---- */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: var(--z-modal); padding: var(--sp-4);
+}
+/* (R19) flex column so ONLY the body scrolls — was `overflow:auto` on the
+   whole modal, which put the scrollbar alongside the header/✕ button too
+   (the stats modal already did this right, via its own one-off inline
+   styles; this brings every other modal in line with it). */
+.modal {
+  background: var(--bg-1); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-2);
+  max-height: 92vh; width: min(560px, 96vw);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.modal.modal-lg { width: min(1100px, 96vw); }
+.modal-header { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border); }
+.modal-header h3 { margin: 0; font-size: var(--fs-lg); }
+.modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--sp-4); }
+.modal-footer { flex: 0 0 auto; display: flex; justify-content: flex-end; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-top: 1px solid var(--border); }
+
+/* ---- Confirm popover (lock-state changes) ---- */
+.confirm-popover {
+  position: absolute; z-index: var(--z-popover);
+  background: var(--bg-2); border: 1px solid var(--border-strong);
+  border-radius: var(--radius); box-shadow: var(--shadow-2);
+  padding: var(--sp-3); width: 240px; font-size: var(--fs-sm);
+}
+.confirm-popover .actions { display: flex; gap: var(--sp-2); justify-content: flex-end; margin-top: var(--sp-2); }
+
+/* ---- Keyboard Shortcuts modal (R9 WS3) ---- */
+.kbd-help { display: flex; flex-direction: column; gap: var(--sp-3); }
+.kbd-row { display: flex; align-items: center; gap: var(--sp-4); }
+.kbd-sep { border-top: 1px solid var(--border); }
+.kbd-key {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px;
+  padding: 0 7px; border-radius: 5px; background: var(--bg-3); border: 1px solid var(--border-strong);
+  box-shadow: 0 2px 0 var(--border-strong); font-size: var(--fs-sm); font-weight: 700; color: var(--text);
+}
+.kbd-key.sm { min-width: 20px; height: 20px; font-size: var(--fs-xs); padding: 0 5px; }
+.kbd-key.wide { min-width: 52px; }
+.kbd-key.dim { color: var(--text-faint); background: var(--bg-2); box-shadow: none; }
+.kbd-key.active { border-color: var(--accent); color: var(--accent); }
+.kbd-arrows { display: grid; grid-template-columns: repeat(3, 30px); gap: 4px; justify-content: center; }
+.kbd-numpad-wrap { display: flex; flex-direction: column; gap: 4px; }
+.kbd-numpad { display: grid; grid-template-columns: repeat(3, 30px); gap: 4px; }
+.kbd-numpad-bottomrow { display: flex; gap: 4px; }
+.kbd-desc, .kbd-legend { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); color: var(--text-dim); }
+.kbd-legend b { color: var(--text); }
+.kbd-note { color: var(--text-faint); font-size: var(--fs-xs); font-style: italic; }
+
+/* ---- Field ---- */
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--sp-3); }
+.field label { font-size: var(--fs-sm); color: var(--text-dim); }
+.field input, .field textarea, .field select {
+  background: var(--bg-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 7px 9px; font-size: var(--fs-md); font-family: inherit;
+}
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+
+/* ---- Toast ---- */
+.toast {
+  position: fixed; bottom: var(--sp-4); left: 50%; transform: translateX(-50%);
+  background: var(--bg-3); color: var(--text); border: 1px solid var(--border-strong);
+  padding: var(--sp-2) var(--sp-4); border-radius: var(--radius); box-shadow: var(--shadow-2);
+  z-index: var(--z-toast); font-size: var(--fs-sm);
+}
+
+.spinner {
+  width: 18px; height: 18px; border: 2px solid var(--border-strong);
+  border-top-color: var(--accent); border-radius: 50%;
+  display: inline-block; animation: spin .7s linear infinite; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- autocomplete (New Deck commander) ---- */
+.autocomplete-list { display: flex; flex-direction: column; margin-top: -8px; }
+.autocomplete-item {
+  padding: 6px 9px; font-size: var(--fs-sm); cursor: pointer;
+  border: 1px solid var(--border); border-top: 0; background: var(--bg-2);
+}
+.autocomplete-item:first-child { border-top: 1px solid var(--border); border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.autocomplete-item:hover { background: var(--bg-hover); color: var(--accent); }
+.cmd-preview { margin-top: var(--sp-3); text-align: center; }
+.cmd-preview img { width: 200px; max-width: 100%; border-radius: var(--radius); box-shadow: var(--shadow-1); }
+.modal-status { margin-top: var(--sp-3); font-size: var(--fs-sm); color: var(--text-dim); display: flex; flex-direction: column; gap: var(--sp-2); }
+.warn-text { color: var(--warn); }
+
+/* import/export modal */
+.io-text {
+  width: 100%; background: var(--bg-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: var(--sp-2); font-family: var(--font-mono); font-size: var(--fs-sm);
+  resize: vertical;
+}
+.row { display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap; }
+.cbx { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-sm); color: var(--text-dim); cursor: pointer; }
+.cbx.disabled { opacity: .45; cursor: not-allowed; }
+.modal-sep { border: 0; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
+
+/* inline rename affordance */
+.deck-title { cursor: text; border-radius: var(--radius-sm); padding: 0 4px; }
+.deck-title:hover { background: var(--bg-2); }
+.deck-title[contenteditable="true"] { background: var(--bg-2); outline: 1px solid var(--accent); cursor: text; }

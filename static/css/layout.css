@@ -1,0 +1,100 @@
+/* layout.css — the 3-panel shell.
+   topbar (thin, fixed height) + main (gallery fills, drawer overlays right). */
+
+#app {
+  display: grid;
+  grid-template-rows: var(--topbar-h) 1fr;
+  height: 100vh;
+}
+
+/* ---- Top panel ---- */
+#topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.topbar-left, .topbar-right { display: flex; align-items: center; gap: var(--sp-2); }
+.topbar-center {
+  flex: 1; min-width: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; line-height: 1.1;
+}
+.topbar-right { margin-left: auto; }
+.brand { font-weight: 700; color: var(--text); white-space: nowrap; letter-spacing: .2px; }
+.deck-title { font-weight: 600; font-size: var(--fs-lg); }
+.deck-commander { font-size: var(--fs-sm); color: var(--text-dim); }
+.deck-count { font-variant-numeric: tabular-nums; font-weight: 600; }
+/* "full" = exactly the right number of cards for the deck's format — gold,
+   same hue as the Locked In lock badge (D — deck picker + loaded-deck header). */
+.deck-title.full, .deck-count.full, #deck-select option.full { color: var(--state-locked-in); }
+.deck-count.off { color: var(--danger); }
+.deck-price { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.save-indicator { font-size: var(--fs-xs); color: var(--text-faint); min-width: 44px; white-space: nowrap; }
+.save-indicator.saving { color: var(--text-dim); }
+.save-indicator.saved  { color: var(--ok); }
+.save-indicator.dirty  { color: var(--danger); font-weight: 600; }
+/* Save button reflects unsaved/in-flight state (U2) */
+#btn-save.dirty { border-color: var(--danger); color: var(--danger); }
+#btn-save.saving { opacity: .7; }
+/* (R18) hidden a couple seconds after settling into "Saved" — autosave
+   already did the work, so the button's rarely needed once idle. */
+#btn-save.idle-hidden { display: none; }
+
+/* ---- Main ---- */
+/* (R5 D1) The control bar spans the FULL width at the top of #main and stays put.
+   Below it, #work-row holds the gallery body + the drawer. The drawer is a flex
+   sibling that SHOVES (compresses) only the gallery body, so the toolbar never
+   moves and the drawer slides in underneath it. */
+#main { display: flex; flex-direction: column; overflow: hidden; }
+
+#work-row { flex: 1 1 auto; min-height: 0; display: flex; overflow: hidden; }
+
+#gallery {
+  flex: 1 1 auto; min-width: 0;
+  overflow: hidden;                 /* the body scrolls, not the whole panel */
+  display: flex; flex-direction: column;
+}
+.gallery-toolbar {
+  flex: 0 0 auto; z-index: var(--z-toolbar);
+  display: flex; flex-direction: column; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+}
+/* align-items:flex-start so every section's title sits on the same top line
+   (incl. label-only sections like "In view"); controls hang below in row 2. */
+.toolbar-row { display: flex; align-items: flex-start; flex-wrap: wrap; gap: var(--sp-2); }
+.gallery-body { padding: var(--sp-4); flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+
+/* ---- Right drawer: a flex sibling that shoves the gallery ---- */
+.drawer {
+  flex: 0 0 0; width: 0;
+  background: var(--bg-1);
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+  transition: flex-basis 180ms ease, width 180ms ease;
+}
+.drawer.open {
+  /* Cap at half the viewport so the gallery always keeps usable width on
+     narrow windows; full --drawer-w on wide screens. */
+  flex-basis: min(var(--drawer-w), 50vw); width: min(var(--drawer-w), 50vw);
+  overflow-y: auto;
+}
+.drawer-close {
+  position: sticky; top: var(--sp-2); float: right;
+  margin: var(--sp-2); background: var(--bg-3); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  width: 28px; height: 28px; font-size: 18px; line-height: 1; cursor: pointer;
+}
+.drawer-close:hover { background: var(--bg-hover); }
+.drawer-body { padding: var(--sp-4); }
+
+/* ---- Empty state ---- */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 60vh; color: var(--text-dim); gap: var(--sp-3); text-align: center;
+}
+.empty-state h2 { color: var(--text); margin: 0; }
